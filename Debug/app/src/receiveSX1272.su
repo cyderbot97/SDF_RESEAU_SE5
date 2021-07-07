@@ -1,0 +1,2 @@
+receiveSX1272.c:32:6:APP_SX1272_setupReceive	8	static
+receiveSX1272.c:140:6:APP_SX1272_runReceive	16	static

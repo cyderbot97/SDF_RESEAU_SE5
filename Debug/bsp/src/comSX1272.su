@@ -1,0 +1,4 @@
+comSX1272.c:13:6:BSP_SPI1_Init	8	static
+comSX1272.c:80:9:BSP_SX1272_Read	32	static
+comSX1272.c:100:6:BSP_SX1272_Write	16	static
+comSX1272.c:118:16:BSP_SPI_SendReceive	24	static

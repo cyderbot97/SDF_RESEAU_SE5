@@ -1,0 +1,2 @@
+transmitSX1272.c:36:6:APP_SX1272_setupTransmit	8	static
+transmitSX1272.c:150:6:APP_SX1272_runTransmit	16	static
