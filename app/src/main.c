@@ -1,7 +1,7 @@
 /*
  * main.c
  *
- *  Created on: 23 août 2020
+ *  Created on: 23 aout 2020
  *      Author: Arnaud
  */
 
@@ -11,6 +11,9 @@
 #include "comSX1272.h"
 #include "SX1272.h"
 #include "appSX1272.h"
+
+#define PREMIER_ESCLAVE 101
+#define DERNIER_ESCLAVE 103
 
 static void SystemClock_Config();
 
@@ -36,16 +39,44 @@ int main()
 	//setup SX1272
 	APP_SX1272_setup();
 
+//	APP_SX1272_runTransmit("salut");
+	uint8_t l_cpt=0,l_retour=1, l_esclave_num = PREMIER_ESCLAVE;
+
 	while(1)
 	{
 		curtime=BSP_millis();
 
-		if((curtime%1000)==0)//send every 1000ms
+
+		if((curtime%10000)==0)//send every 100ms
 		{
-			APP_SX1272_runTransmit();
-			//APP_SX1272_runReceive();
-			i++;
+			//APP_SX1272_runTransmit();
+			my_printf("\r\n Requete a l'esclave n %d",l_esclave_num);
+			APP_SX1272_runTransmitSlave(l_esclave_num);
+			l_esclave_num +=1;
+
+			l_retour = APP_SX1272_runReceive();
+			l_cpt+=l_retour;
+			my_printf("\r\n l_cpt = %d / l_retour = %d\r\n",l_cpt,l_retour);
+			if(l_esclave_num > DERNIER_ESCLAVE)
+				l_esclave_num = PREMIER_ESCLAVE;
+			//i++;
+//			if(l_cpt == 3)
+//				{
+//					APP_SX1272_runTransmit("salut");
+//					l_cpt = 0;
+//				}
+//			if(l_retour == 0)
+//			  {
+//			//    	APP_SX1272_setup();
+//				BSP_SX1272_clearFlags();
+//				my_printf("\r \n action specifique a l'esclave 102");
+//				APP_SX1272_runTransmit("salut");
+//			//    	BSP_DELAY_ms(10);
+//			  }
 		}
+
+
+		//APP_SX1272_setup();
 	}
 }
 

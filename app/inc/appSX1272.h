@@ -1,7 +1,7 @@
 /*
  * appSX1272.h
  *
- *  Created on: 25 août 2020
+ *  Created on: 25 aoï¿½t 2020
  *      Author: Arnaud
  */
 
@@ -15,12 +15,12 @@
 ///////////////////////////////////////////////////////////////
 
 //Main parameters (to be changed)
-#define TX_Addr BROADCAST_ADDR
-#define RX_Addr 8 //address of the node
+#define TX_Addr 100//BROADCAST_ADDR
+#define RX_Addr 100 //address of the node
 
 #define OutPower POW_14 //min -1, max 14
 #define TypeModulation 1 //0: LORA, 1:FSK
-#define PeriodTransmission 5000 //en ms
+#define PeriodTransmission 100 //en ms
 
 //LORA configuration (to be changed)
 #define paramBW BW_125 //BW_125, BW_250 or BW_500
@@ -35,11 +35,12 @@
 #define PreambLong 12//12
 #define freq_centrale CH_868v3
 #define MaxNbRetries 3
-#define WaitTxMax 5000 //en ms
-#define WaitRxMax 10000 //en ms
+#define WaitTxMax 500 //en ms
+#define WaitRxMax 7000 //en ms
 
 void APP_SX1272_setup();
-void APP_SX1272_runTransmit();
-void APP_SX1272_runReceive();
+void APP_SX1272_runTransmit(char Message[6]);
+void APP_SX1272_runTransmitSlave(uint8_t l_address);
+int APP_SX1272_runReceive();
 
 #endif /* APP_INC_APPSX1272_H_ */
