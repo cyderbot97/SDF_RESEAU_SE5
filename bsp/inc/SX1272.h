@@ -1,7 +1,7 @@
 /*
  * SX1272.h
  *
- *  Created on: 24 août 2020
+ *  Created on: 24 aoï¿½t 2020
  *      Author: Arnaud
  */
 
@@ -21,7 +21,7 @@
  * Definitions & Declarations
  *****************************************************************************/
 
-#define SX1272_debug_mode 0
+#define SX1272_debug_mode 1
 
 // pins used for SS and Reset signals of Arduino MEGA 2560 board (reset signal is optional)
 #define SX1272_RST  A0

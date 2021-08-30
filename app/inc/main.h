@@ -1,7 +1,7 @@
 /*
  * main.h
  *
- *  Created on: 23 août 2020
+ *  Created on: 23 aoï¿½t 2020
  *      Author: Arnaud
  */
 
@@ -14,5 +14,8 @@
 
 int my_printf	(const char *format, ...);
 int my_sprintf	(char *out, const char *format, ...);
+void AnalyseTramesRecues(void);
+void ConfigurationCapteurs(char* p_donnee);
+void LectureCapteur(char* p_donnee);
 
 #endif /* APP_INC_MAIN_H_ */

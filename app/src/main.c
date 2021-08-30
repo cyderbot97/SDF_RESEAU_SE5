@@ -12,15 +12,25 @@
 #include "SX1272.h"
 #include "appSX1272.h"
 
-#define PREMIER_ESCLAVE 101
-#define DERNIER_ESCLAVE 103
 
 static void SystemClock_Config();
 
 int main()
 {
+	// Initialisation des variable locales
+	uint8_t l_cpt=0;
+	uint8_t l_esclave_num = PREMIER_ESCLAVE;
+
 	uint32_t curtime=0;
 	uint32_t i=0;
+
+	uint16_t l_period; // max 60 secondes
+
+	char l_retour_StatusRXMessage=0;
+	char *l_msgTest[] ={"A0","B4TEMP","C5LUMI"};
+
+
+
 
 	// Initialize System clock to 48MHz from external clock
 	SystemClock_Config();
@@ -39,45 +49,134 @@ int main()
 	//setup SX1272
 	APP_SX1272_setup();
 
-//	APP_SX1272_runTransmit("salut");
-	uint8_t l_cpt=0,l_retour=1, l_esclave_num = PREMIER_ESCLAVE;
+#if(MODE_MAITRE_ESCLAVE == 1)
+	l_period = 10000;
+#else
+	l_period = 500;
+#endif
+
 
 	while(1)
 	{
 		curtime=BSP_millis();
 
 
-		if((curtime%10000)==0)//send every 100ms
+		if((curtime%l_period)==0)//send every 100ms
 		{
-			//APP_SX1272_runTransmit();
-			my_printf("\r\n Requete a l'esclave n %d",l_esclave_num);
-			APP_SX1272_runTransmitSlave(l_esclave_num);
-			l_esclave_num +=1;
 
-			l_retour = APP_SX1272_runReceive();
-			l_cpt+=l_retour;
-			my_printf("\r\n l_cpt = %d / l_retour = %d\r\n",l_cpt,l_retour);
-			if(l_esclave_num > DERNIER_ESCLAVE)
+#if(MODE_MAITRE_ESCLAVE == 1)
+
+			//MAITRE
+//			APP_SX1272_runTransmit(l_esclave_num, &l_msgTest[0][0]);
+			APP_SX1272_runTransmit(l_esclave_num, &l_msgTest[i][0]);
+
+			l_esclave_num +=1;
+			l_retour_StatusRXMessage = APP_SX1272_runReceive();
+
+
+			if(l_esclave_num > DERNIER_ESCLAVE - 1)
 				l_esclave_num = PREMIER_ESCLAVE;
-			//i++;
-//			if(l_cpt == 3)
-//				{
-//					APP_SX1272_runTransmit("salut");
-//					l_cpt = 0;
-//				}
-//			if(l_retour == 0)
-//			  {
-//			//    	APP_SX1272_setup();
-//				BSP_SX1272_clearFlags();
-//				my_printf("\r \n action specifique a l'esclave 102");
-//				APP_SX1272_runTransmit("salut");
-//			//    	BSP_DELAY_ms(10);
-//			  }
+			my_printf("\r\n\r\n Requete => %s a l'esclave n %d", &l_msgTest[i][0],l_esclave_num);
+			my_printf("\r\n l_cpt = %d / l_retour_StatusRXMessage = %c \r\n\r\n",l_cpt,l_retour_StatusRXMessage);
+			//BSP_DELAY_ms(500);
+			AnalyseTramesRecues();
+			i++;
+			if(i==3)
+				i=0;
+#else
+			//ESCLAVE
+			l_retour_StatusRXMessage = APP_SX1272_runReceive();
+			AnalyseTramesRecues();
+
+#endif
+
 		}
 
 
-		//APP_SX1272_setup();
+
+//#if(MODE_MAITRE_ESCLAVE == 1)
+//		BSP_DELAY_ms(500);
+//
+//		if(strncmp("salut",currentstate.packet_received.data,strlen("salut")) == 0)
+//			return 0;
+//		else
+//			return 1;
+//
+//
+//#endif
 	}
+}
+
+/*
+ * Analyse trame
+ */
+void AnalyseTramesRecues(void)
+{
+	char l_message[50];
+#if(SX1272_debug_mode > 0)
+	my_printf("\r\n AnalyseTramesRecues");
+#endif
+#if(MODE_MAITRE_ESCLAVE == 1)
+	switch(currentstate.packet_received.data[0])
+	{
+	case 65:
+		if(strncmp("A0present",currentstate.packet_received.data,strlen(currentstate.packet_received.data)) == 0)
+			my_printf("\r\n\r\n Presence de l'esclave n %d \r\n\r\n",currentstate.packet_received.src);
+		else
+			my_printf("\r\n\r\n Requete presence en erreur de l'esclave n %d \r\n\r\n",currentstate.packet_sent.dst);
+		break;
+	case 66:
+		my_printf("\r\n\r\n registre maj de l'esclave n %d => %s \r\n\r\n",currentstate.packet_received.src, currentstate.packet_received.data);
+		break;
+	case 67:
+		my_printf("\r\n\r\n donnees de l'esclave n %d => %s \r\n\r\n",currentstate.packet_received.src, currentstate.packet_received.data);
+		break;
+	default:
+		my_printf("\r\n\r\n octet de reserve aucune action / esclave n %d => %s \r\n\r\n",currentstate.packet_received.src, currentstate.packet_received.data);
+		break;
+	}
+#else
+	my_printf("\r\n\r\n Switch case => %d => %c \r\n\r\n",currentstate.packet_received.data[0], currentstate.packet_received.data[0]);
+	switch(currentstate.packet_received.data[0])
+	{
+	case 65:
+		sprintf(l_message, "%s", "present");
+		APP_SX1272_runTransmit(MAITRE, "A0present");
+		break;
+	case 66:
+		ConfigurationCapteurs(&l_message[0]);
+		APP_SX1272_runTransmit(MAITRE, "BTcOK");
+		break;
+	case 67:
+		LectureCapteur(&l_message[0]);
+		APP_SX1272_runTransmit(MAITRE, "CL450");
+		break;
+	default:
+		my_printf("\r\n\r\n octet de reserve aucune action n %d => %s \r\n\r\n",currentstate.packet_received.src, currentstate.packet_received.data);
+		break;
+	}
+	APP_SX1272_runTransmit(MAITRE, &l_message[0]);
+#endif
+
+
+}
+
+/*
+ * Configuration des capteurs
+ */
+void ConfigurationCapteurs(char p_donnee[])
+{
+	p_donnee = "BcoOK";
+	my_printf("\r\n\r\n Configuration Modifie \r\n\r\n");
+}
+
+/*
+ * Lecture d'un capteur
+ */
+void LectureCapteur(char p_donnee[])
+{
+	p_donnee = "Cte45";
+	my_printf("\r\n\r\n retour de lum 45O \r\n\r\n");
 }
 
 /*
@@ -130,7 +229,7 @@ static void SystemClock_Config()
 		timeout--;
 	} while ((PLL_Status == 0) && (timeout > 0));
 
-        // Set AHB prescaler to /1
+	// Set AHB prescaler to /1
 	RCC->CFGR &= ~RCC_CFGR_HPRE_Msk;
 	RCC->CFGR |= RCC_CFGR_HPRE_DIV1;
 

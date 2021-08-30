@@ -10,13 +10,41 @@
 
 #include "SX1272.h"
 
+/******************************************************************************
+ * Definitions & Declarations
+ *****************************************************************************/
+
+#define MODE_MAITRE_ESCLAVE	1 // Maitre = 1 et Esclave = 0
+
+#define MAITRE 				100
+#define PREMIER_ESCLAVE 	101
+#define DERNIER_ESCLAVE 	103
+
 ///////////////////////////////////////////////////////////////
 // Configuration du module en mode LoRA ou FSK
 ///////////////////////////////////////////////////////////////
 
-//Main parameters (to be changed)
-#define TX_Addr 100//BROADCAST_ADDR
-#define RX_Addr 100 //address of the node
+#if(MODE_MAITRE_ESCLAVE == 1)
+
+#define TX_Addr 101 //address of the first slave
+#define RX_Addr MAITRE //address of the master
+
+#else
+
+#define TX_Addr MAITRE //address of the master
+//#define RX_Addr 101 //address of the slave
+#define RX_Addr 102 //address of the slave
+//#define RX_Addr 103 //address of the slave
+//#define RX_Addr 104 //address of the slave
+//#define RX_Addr 105 //address of the slave
+//#define RX_Addr 106 //address of the slave
+//#define RX_Addr 107 //address of the slave
+//#define RX_Addr 108 //address of the slave
+//#define RX_Addr 109 //address of the slave
+//#define RX_Addr 110 //address of the slave
+
+#endif
+
 
 #define OutPower POW_14 //min -1, max 14
 #define TypeModulation 1 //0: LORA, 1:FSK
@@ -38,9 +66,12 @@
 #define WaitTxMax 500 //en ms
 #define WaitRxMax 7000 //en ms
 
+extern SX1272status currentstate;
+
 void APP_SX1272_setup();
-void APP_SX1272_runTransmit(char Message[6]);
-void APP_SX1272_runTransmitSlave(uint8_t l_address);
-int APP_SX1272_runReceive();
+//void APP_SX1272_runTransmit(char Message[6]);
+void APP_SX1272_runTransmit(uint8_t l_address, char l_message[]);
+//void APP_SX1272_runTransmitSlave(uint8_t l_address);
+char APP_SX1272_runReceive();
 
 #endif /* APP_INC_APPSX1272_H_ */
