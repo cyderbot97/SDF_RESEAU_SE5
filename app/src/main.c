@@ -73,16 +73,18 @@ int main()
 			l_esclave_num +=1;
 			l_retour_StatusRXMessage = APP_SX1272_runReceive();
 
-
-			if(l_esclave_num > DERNIER_ESCLAVE - 1)
-				l_esclave_num = PREMIER_ESCLAVE;
 			my_printf("\r\n\r\n Requete => %s a l'esclave n %d", &l_msgTest[i][0],l_esclave_num);
 			my_printf("\r\n l_cpt = %d / l_retour_StatusRXMessage = %c \r\n\r\n",l_cpt,l_retour_StatusRXMessage);
+
 			//BSP_DELAY_ms(500);
 			AnalyseTramesRecues();
+
 			i++;
 			if(i==3)
 				i=0;
+			if(l_esclave_num > DERNIER_ESCLAVE - 1)
+							l_esclave_num = PREMIER_ESCLAVE;
+
 #else
 			//ESCLAVE
 			l_retour_StatusRXMessage = APP_SX1272_runReceive();
@@ -114,7 +116,7 @@ void AnalyseTramesRecues(void)
 {
 	char l_message[50];
 #if(SX1272_debug_mode > 0)
-	my_printf("\r\n AnalyseTramesRecues");
+	my_printf("\r\n AnalyseTramesRecues : ");
 #endif
 #if(MODE_MAITRE_ESCLAVE == 1)
 	switch(currentstate.packet_received.data[0])
@@ -144,12 +146,12 @@ void AnalyseTramesRecues(void)
 		APP_SX1272_runTransmit(MAITRE, "A0present");
 		break;
 	case 66:
-		ConfigurationCapteurs(&l_message[0]);
-		APP_SX1272_runTransmit(MAITRE, "BTcOK");
+		ConfigurationCapteurs(&l_message);
+		APP_SX1272_runTransmit(MAITRE, &l_message);
 		break;
 	case 67:
 		LectureCapteur(&l_message[0]);
-		APP_SX1272_runTransmit(MAITRE, "CL450");
+		APP_SX1272_runTransmit(MAITRE, &l_message);
 		break;
 	default:
 		my_printf("\r\n\r\n octet de reserve aucune action n %d => %s \r\n\r\n",currentstate.packet_received.src, currentstate.packet_received.data);
@@ -166,8 +168,13 @@ void AnalyseTramesRecues(void)
  */
 void ConfigurationCapteurs(char p_donnee[])
 {
-	p_donnee = "BcoOK";
-	my_printf("\r\n\r\n Configuration Modifie \r\n\r\n");
+	if(strncmp("B4TEMP",currentstate.packet_received.data,strlen(currentstate.packet_received.data)) == 0)
+		p_donnee = "B6okTEMP";
+	else if(strncmp("B4LUMI",currentstate.packet_received.data,strlen(currentstate.packet_received.data)) == 0)
+		p_donnee = "B6okLUMI";
+	else
+		p_donnee = "B3nok";
+		my_printf("\r\n\r\n Configuration capteur \r\n\r\n");
 }
 
 /*
@@ -175,8 +182,13 @@ void ConfigurationCapteurs(char p_donnee[])
  */
 void LectureCapteur(char p_donnee[])
 {
-	p_donnee = "Cte45";
-	my_printf("\r\n\r\n retour de lum 45O \r\n\r\n");
+	if(strncmp("C4TEMP",currentstate.packet_received.data,strlen(currentstate.packet_received.data)) == 0)
+		p_donnee = "C3239";
+	else if(strncmp("C4LUMI",currentstate.packet_received.data,strlen(currentstate.packet_received.data)) == 0)
+			p_donnee = "C42309";
+	else
+		p_donnee = "C4none";
+	my_printf("\r\n\r\n retour capteur \r\n\r\n");
 }
 
 /*

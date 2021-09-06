@@ -21,7 +21,7 @@
  * Definitions & Declarations
  *****************************************************************************/
 
-#define SX1272_debug_mode 1
+#define SX1272_debug_mode 0
 
 // pins used for SS and Reset signals of Arduino MEGA 2560 board (reset signal is optional)
 #define SX1272_RST  A0

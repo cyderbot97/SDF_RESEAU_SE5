@@ -28,12 +28,13 @@
 
 	#define TX_Addr 101 //address of the first slave
 	#define RX_Addr MAITRE //address of the master
+	#define WaitRxMax 7000 //en ms
 
-	#else
+#else
 
 	#define TX_Addr MAITRE //address of the master
-	//#define RX_Addr 101 //address of the slave
-	#define RX_Addr 102 //address of the slave
+	#define RX_Addr 101 //address of the slave
+	//#define RX_Addr 102 //address of the slave
 	//#define RX_Addr 103 //address of the slave
 	//#define RX_Addr 104 //address of the slave
 	//#define RX_Addr 105 //address of the slave
@@ -42,9 +43,8 @@
 	//#define RX_Addr 108 //address of the slave
 	//#define RX_Addr 109 //address of the slave
 	//#define RX_Addr 110 //address of the slave
-	#define WaitRxMax 7000 //en ms
-#else
 	#define WaitRxMax 10000000 //en ms
+
 #endif
 
 
